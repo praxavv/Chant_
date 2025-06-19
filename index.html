@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Chant Counter</title>
+    <style>
+        body {
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: black;
+            color: #00ff00;  /* Neon green text */
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; /* Neon glow effect */
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars */
+        }
+
+        /* Shining stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: twinkle 1s infinite alternate;
+        }
+        @keyframes twinkle {
+            from { opacity: 0.7; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+            box-sizing: border-box;
+            margin-top: -80px;
+            /* No relative positioning needed here as settings icon is fixed */
+        }
+
+        #counter {
+            font-size: 6em;
+            margin-bottom: 30px;
+            color: black;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+
+        /* Settings Icon Style - Fixed to top-right */
+        #settingsIcon {
+            position: fixed; /* Fixed to the viewport */
+            top: 20px; /* Distance from top */
+            right: 20px; /* Distance from right */
+            font-size: 2.5em; /* Size of the gear icon */
+            color: #00ff00; /* Neon green color */
+            cursor: pointer;
+            text-shadow: 0 0 8px #00ff00; /* Initial glow */
+            transition: text-shadow 0.3s ease, transform 0.3s ease;
+            z-index: 1001; /* Ensure it's above the panel */
+            display: flex; /* For perfect centering of the gear if it were an image */
+            align-items: center;
+            justify-content: center;
+            width: 50px; /* Hit area for tapping */
+            height: 50px; /* Hit area for tapping */
+            border-radius: 50%; /* Make hit area circular if desired */
+        }
+        #settingsIcon:hover {
+            text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; /* Brighter glow on hover */
+            transform: rotate(30deg); /* Slight rotation on hover */
+        }
+        #settingsIcon:active {
+            text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+            transform: rotate(60deg); /* More rotation on click */
+        }
+
+        /* Settings panel styles */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); /* Semi-transparent black overlay */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* On top of everything, but below the icon itself */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .settings-panel.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .settings-content {
+            background-color: #1a1a1a; /* Darker background for the panel content */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px #00ff00; /* Green glow around the panel */
+            text-align: center;
+            position: relative;
+        }
+
+        .settings-content h2 {
+            font-size: 2em;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            margin-bottom: 30px;
+        }
+
+        .settings-panel .panel-buttons button {
+            padding: 15px 40px;
+            font-size: 1.5em;
+            margin: 15px; /* Margin for spacing between buttons */
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            background-color: transparent;
+            color: #00ff00;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        .settings-panel .panel-buttons button:hover {
+            background-color: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px #00ff00;
+        }
+        .settings-panel .panel-buttons button:active {
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+
+        #closeSettingsButton {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #00ff00;
+            cursor: pointer;
+            text-shadow: 0 0 5px #00ff00;
+            transition: color 0.3s ease;
+        }
+        #closeSettingsButton:hover {
+            color: #ff0000; /* Red on hover */
+            text-shadow: 0 0 10px #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container">
+        <h1>Pranav Chant</h1>
+        <div id="counter">0</div>
+    </div>
+
+    <div id="settingsIcon">⚙</div>
+
+    <div id="settingsPanel" class="settings-panel">
+        <div class="settings-content">
+            <button id="closeSettingsButton">&times;</button> <h2>Counter Settings</h2>
+            <div class="panel-buttons">
+                <button id="decrementButton">Decrement</button>
+                <button id="resetButton">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const counterElement = document.getElementById('counter');
+        const settingsIcon = document.getElementById('settingsIcon'); // Changed to settingsIcon
+        const settingsPanel = document.getElementById('settingsPanel');
+        const closeSettingsButton = document.getElementById('closeSettingsButton');
+        const resetButton = document.getElementById('resetButton');
+        const decrementButton = document.getElementById('decrementButton');
+        const body = document.body;
+        const starsContainer = document.getElementById('stars');
+
+        let count = 0;
+        const LOCAL_STORAGE_KEY = 'alienChantCount';
+
+        function updateCounter() {
+            counterElement.textContent = count.toLocaleString();
+            localStorage.setItem(LOCAL_STORAGE_KEY, count);
+        }
+
+        function loadCount() {
+            const storedCount = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (storedCount !== null && !isNaN(storedCount)) {
+                count = parseInt(storedCount, 10);
+            } else {
+                count = 0;
+            }
+            updateCounter();
+        }
+
+        // --- Event Listeners ---
+
+        settingsIcon.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent body click from firing when clicking the icon
+            settingsPanel.classList.add('active'); // Show the settings panel
+        });
+
+        closeSettingsButton.addEventListener('click', () => {
+            settingsPanel.classList.remove('active'); // Hide the settings panel
+        });
+
+        resetButton.addEventListener('click', () => {
+            count = 0;
+            updateCounter();
+            settingsPanel.classList.remove('active'); // Close panel after reset
+        });
+
+        decrementButton.addEventListener('click', () => {
+            if (count > 0) {
+                count--;
+                updateCounter();
+            }
+            // Optional: Close panel after decrement if you want, or keep it open
+            // settingsPanel.classList.remove('active');
+        });
+
+        // Count taps on the body only if the settings panel is NOT active
+        body.addEventListener('click', (event) => {
+            // Check if the click target is within the settings panel or the settings icon itself
+            const isClickInsideSettingsPanel = settingsPanel.contains(event.target);
+            const isClickOnSettingsIcon = settingsIcon.contains(event.target);
+
+            if (!settingsPanel.classList.contains('active') && !isClickInsideSettingsPanel && !isClickOnSettingsIcon) {
+                count++;
+                updateCounter();
+            }
+        });
+
+
+        // Create shining stars background
+        function createStars(numStars) {
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random()}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        createStars(200); // Adjust this number for more or fewer stars
+
+        // Initial load
+        loadCount();
+    </script>
+</body>
+</html>
