@@ -253,14 +253,16 @@ bgMusic.addEventListener("ended", () => {
     }
 
     function loadCount() {
-      const storedCount = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedCount !== null && !isNaN(storedCount)) {
-        count = parseInt(storedCount, 10);
-      } else {
-        count = 0;
-      }
-      updateCounter();
-    }
+  const storedCount = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (storedCount !== null && !isNaN(storedCount)) {
+    count = parseInt(storedCount, 10);
+  } else {
+    // First time on GitHub Pages — set her latest known count
+    count = 87; // ← Change this to whatever her latest count was
+    localStorage.setItem(LOCAL_STORAGE_KEY, count);
+  }
+  updateCounter();
+}
 
     settingsIcon.addEventListener("click", (event) => {
       event.stopPropagation();
