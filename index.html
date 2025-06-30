@@ -254,11 +254,11 @@ bgMusic.addEventListener("ended", () => {
 
     function loadCount() {
   const storedCount = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (storedCount !== null && !isNaN(storedCount)) {
-    count = parseInt(storedCount, 10);
+  const parsedCount = parseInt(storedCount, 10);
+  if (!isNaN(parsedCount)) {
+    count = parsedCount;
   } else {
-    // First time on GitHub Pages — set her latest known count
-    count = 89; // ← Change this to whatever her latest count was
+    count = 89; //manual count set to migrate
     localStorage.setItem(LOCAL_STORAGE_KEY, count);
   }
   updateCounter();
