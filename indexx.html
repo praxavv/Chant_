@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alien Chant Counter</title>
+  <style>
+    body {
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: black;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .star {
+      position: absolute;
+      background-color: white;
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: twinkle 1s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from {
+        opacity: 0.7;
+        transform: scale(1);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .container {
+      margin-top: -80px;
+      padding: 30px;
+    }
+
+    #counter {
+      font-size: 20pt;
+      margin-bottom: 30px;
+    }
+
+    #settingsIcon {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 2.5em;
+      color: #00ff00;
+      cursor: pointer;
+      text-shadow: 0 0 8px #00ff00;
+      transition: text-shadow 0.3s ease, transform 0.3s ease;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    #settingsIcon:hover {
+      text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00;
+      transform: rotate(30deg);
+    }
+
+    #settingsIcon:active {
+      text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+      transform: rotate(60deg);
+    }
+
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .settings-panel.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .settings-content {
+      background-color: #1a1a1a;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00ff00;
+      text-align: center;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 70%;
+      max-width: 400px;
+    }
+
+    .settings-content h2 {
+      font-size: 2em;
+      color: #00ff00;
+      margin-bottom: 30px;
+    }
+
+    .panel-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .panel-buttons button {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 1.2em;
+      border: 2px solid #00ff00;
+      background-color: transparent;
+      color: #00ff00;
+      border-radius: 8px;
+      box-shadow: 0 0 5px #00ff00;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .panel-buttons button:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+      box-shadow: 0 0 15px #00ff00;
+    }
+
+    .panel-buttons button:active {
+      background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    #closeSettingsButton {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 2em;
+      color: #00ff00;
+      cursor: pointer;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    #closeSettingsButton:hover {
+      color: #ff0000;
+      text-shadow: 0 0 10px #ff0000;
+    }
+
+    /* Styles for the new manual count feature */
+    .setting-item {
+      margin-bottom: 15px; /* Add some space below each setting */
+      display: flex; /* Make label, input, and button align */
+      align-items: center; /* Vertically align them */
+      gap: 10px; /* Space between elements */
+    }
+
+    .setting-item label {
+      color: #39ff14; /* Light color for text */
+      font-size: 1em;
+      min-width: 100px; /* Give label some fixed width for alignment */
+      text-align: right; /* Align text to the right for label */
+    }
+
+    #manualCountInput {
+      background-color: #222;
+      border: 1px solid #39ff14; /* Neon border */
+      color: #39ff14; /* Neon text */
+      padding: 8px 10px;
+      border-radius: 5px;
+      flex-grow: 1; /* Allow input to take available space */
+      max-width: 120px; /* Limit input width */
+      font-size: 1em;
+    }
+
+    #manualCountInput:focus {
+      outline: none;
+      border-color: #00e600;
+      box-shadow: 0 0 5px #39ff14;
+    }
+
+    #setManualCountButton {
+      background-color: #39ff14; /* Neon green */
+      color: #1a1a1a; /* Dark text for contrast */
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14; /* Neon glow */
+      transition: all 0.2s ease-in-out; /* Smooth transition for hover/active */
+      white-space: nowrap; /* Prevent text wrapping */
+      align-self: center;
+    }
+
+    #setManualCountButton:hover {
+      background-color: #00e600; /* Slightly different green on hover */
+      box-shadow: 0 0 15px #39ff14, 0 0 25px #39ff14, 0 0 35px #39ff14; /* More intense glow */
+    }
+
+    #setManualCountButton:active {
+      transform: translateY(1px); /* Little press effect */
+    }
+
+    @media (max-width: 600px) {
+      .settings-content {
+        padding: 20px;
+      }
+
+      .panel-buttons button,
+      #setManualCountButton { /* Apply to manual set button too */
+        font-size: 1em;
+        padding: 10px 16px;
+      }
+
+      .setting-item {
+        flex-direction: column; /* Stack elements vertically on small screens */
+        align-items: flex-start; /* Align left */
+      }
+
+      .setting-item label {
+        width: 100%;
+        text-align: left; /* Align label left when stacked */
+        margin-bottom: 5px;
+      }
+
+      #manualCountInput {
+        width: 100%;
+        max-width: none; /* Remove max-width when stacked */
+        box-sizing: border-box; /* Include padding in width */
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" src="bg-music.mp3" loop></audio>
+  <div class="stars" id="stars"></div>
+  <div class="container"></div>
+
+  <div id="settingsIcon">⚙</div>
+
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-content">
+      <button id="closeSettingsButton">&times;</button>
+      <h2>Counter Settings</h2>
+
+      <div id="viewScore" style="font-size: 15pt; margin-bottom: 20px;">
+        👽 Pranav Chant: <span id="counter">0</span>
+      </div>
+
+      <div class="setting-item">
+          <label for="manualCountInput">Set Count to:</label>
+          <input type="number" id="manualCountInput" min="0" value="0">
+          <button id="setManualCountButton">Set & Start</button>
+      </div>
+      <div class="panel-buttons">
+        <button id="decrementButton">Decrement</button>
+        <button id="resetButton">Reset</button>
+        <button id="playMusicButton">▶ Play Music</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const counterElement = document.getElementById("counter");
+    const settingsIcon = document.getElementById("settingsIcon");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const closeSettingsButton = document.getElementById("closeSettingsButton");
+    const resetButton = document.getElementById("resetButton");
+    const decrementButton = document.getElementById("decrementButton");
+    const body = document.body;
+    const starsContainer = document.getElementById("stars");
+    const bgMusic = document.getElementById("bgMusic");
+    const playMusicButton = document.getElementById("playMusicButton");
+    // New elements for manual count
+    const manualCountInput = document.getElementById("manualCountInput");
+    const setManualCountButton = document.getElementById("setManualCountButton");
+
+
+    let isMusicPlaying = false;
+
+playMusicButton.addEventListener("click", () => {
+  if (isMusicPlaying) {
+    bgMusic.pause();
+    playMusicButton.textContent = "▶ Play Music";
+  } else {
+    bgMusic.play().then(() => {
+      playMusicButton.textContent = "⏸ Pause Music";
+    }).catch((err) => {
+      alert("Your browser blocked audio. Tap again or check settings.");
+      console.error(err);
+    });
+  }
+  isMusicPlaying = !isMusicPlaying;
+});
+
+bgMusic.addEventListener("ended", () => {
+  isMusicPlaying = false;
+  playMusicButton.textContent = "▶ Play Music";
+});
+
+
+
+    let count = 0;
+    const LOCAL_STORAGE_KEY = "alienChantCount";
+
+    function updateCounter() {
+      counterElement.textContent = count.toLocaleString();
+      localStorage.setItem(LOCAL_STORAGE_KEY, count);
+    }
+
+    function loadCount() {
+  const storedCount = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const parsedCount = parseInt(storedCount, 10);
+  if (!isNaN(parsedCount)) {
+    count = parsedCount;
+  } else {
+    count = 89; //manual count set to migrate
+    localStorage.setItem(LOCAL_STORAGE_KEY, count);
+  }
+  updateCounter();
+}
+
+    settingsIcon.addEventListener("click", (event) => {
+      event.stopPropagation();
+      settingsPanel.classList.add("active");
+      // When settings open, set the input value to current count
+      manualCountInput.value = count;
+    });
+
+    closeSettingsButton.addEventListener("click", () => {
+      settingsPanel.classList.remove("active");
+    });
+
+    resetButton.addEventListener("click", () => {
+      count = 0;
+      updateCounter();
+      settingsPanel.classList.remove("active");
+    });
+
+    decrementButton.addEventListener("click", () => {
+      if (count > 0) {
+        count--;
+        updateCounter();
+      }
+    });
+
+    // Event listener for the new manual count button
+    setManualCountButton.addEventListener("click", () => {
+      const newCount = parseInt(manualCountInput.value, 10);
+      if (!isNaN(newCount) && newCount >= 0) {
+        count = newCount;
+        updateCounter();
+        settingsPanel.classList.remove("active"); // Close settings after setting
+      } else {
+        alert("Fr, enter a valid number for the count!"); // Basic validation feedback
+      }
+    });
+
+
+    body.addEventListener("click", (event) => {
+      const isClickInsideSettingsPanel = settingsPanel.contains(event.target);
+      const isClickOnSettingsIcon = settingsIcon.contains(event.target);
+
+      if (!settingsPanel.classList.contains("active") && !isClickInsideSettingsPanel && !isClickOnSettingsIcon) {
+        count++;
+        updateCounter();
+      }
+    });
+
+    function createStars(numStars) {
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random()}s`;
+        starsContainer.appendChild(star);
+      }
+    }
+
+    createStars(200);
+    loadCount();
+  </script>
+</body>
+</html>
