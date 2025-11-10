@@ -22,6 +22,8 @@ let mantras = [];
 let activeMantraId = null;
 
 const LOCAL_STORAGE_KEY = "alienMantras";
+const APP_VERSION_KEY = "mantraAppVersion";
+const CURRENT_VERSION = 2; // Increment when making structural changes
 
 // --- Audio ---
 playMusicButton.addEventListener("click", () => {
@@ -50,33 +52,33 @@ function saveMantras() {
 }
 
 function loadMantras() {
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const savedVersion = localStorage.getItem(APP_VERSION_KEY);
 
-  const defaults = [
-    { id: 1, name: "ॐ प्रणव नमः", count: 0, locked: true },
-    { id: 2, name: "जय श्री प्रणव", count: 0, locked: true },
-    { id: 3, name: "श्री प्रणव समर्थ", count: 0, locked: true }
-  ];
+  if (savedVersion !== CURRENT_VERSION.toString()) {
+    // First time running this version
+    // Keep only user-added mantras; remove old defaults if any
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) {
+      const allMantras = JSON.parse(stored);
+      mantras = allMantras.filter(m => !m.locked); // remove old defaults
+    } else {
+      mantras = [];
+    }
 
-  if (stored) {
-    mantras = JSON.parse(stored);
-
-    // Merge defaults in correct order without duplicates
-    mantras = defaults.concat(
-      mantras.filter(m => !defaults.some(d => d.name === m.name))
-    );
-
+    localStorage.setItem(APP_VERSION_KEY, CURRENT_VERSION.toString());
+    saveMantras();
   } else {
-    mantras = [...defaults];
+    // Load normally
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    mantras = stored ? JSON.parse(stored) : [];
   }
 
-  saveMantras();
-
+  // Set active mantra
   if (!activeMantraId && mantras.length) activeMantraId = mantras[0].id;
+
   updateMantraDropdown();
   updateUI();
 }
-
 
 function updateMantraDropdown() {
   mantraSelect.innerHTML = "";
@@ -84,18 +86,16 @@ function updateMantraDropdown() {
     const option = document.createElement("option");
     option.value = m.id;
 
-    // Only show name in main bar, but list keeps (count)
     if (m.id === activeMantraId) {
-      option.textContent = m.name; // main bar
+      option.textContent = m.name;
     } else {
-      option.textContent = `${m.name} (${m.count})`; // other options
+      option.textContent = `${m.name} (${m.count})`;
     }
 
     if (m.id === activeMantraId) option.selected = true;
     mantraSelect.appendChild(option);
   });
 }
-
 
 mantraSelect.addEventListener("change", (e) => {
   activeMantraId = parseInt(e.target.value, 10);
@@ -105,8 +105,8 @@ mantraSelect.addEventListener("change", (e) => {
 
 // --- Add / Delete ---
 addMantraButton.addEventListener("click", () => {
-  if (mantras.length >= 10) {
-    alert("You can only have up to 10 mantras.");
+  if (mantras.length >= 20) {
+    alert("You can only have up to 20 mantras.");
     return;
   }
   const name = prompt("Enter new mantra name:");
@@ -125,7 +125,6 @@ if (deleteMantraButton) {
     const m = mantras.find(x => x.id === selectedId);
     if (!m) return;
 
-    // 🚫 Block deletion of defaults
     if (m.locked) {
       alert(`"${m.name}" is a default mantra and cannot be deleted.`);
       return;

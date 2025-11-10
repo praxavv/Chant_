@@ -1,5 +1,5 @@
 body {
-            font-family: monospace;
+            font-family: 'Georgia', 'Times New Roman', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -103,19 +103,41 @@ body {
         }
 
         /* Add / Delete buttons */
-        #addMantraButton,
-        #deleteMantraButton {
+        #addMantraButton {
             background-color: transparent;
             color: #39ff14;
             border: 2px solid #39ff14;
-            border-radius: 5px;
+            border-radius: 25px;
             padding: 8px 12px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
             transition: all 0.3s ease;
-            flex-shrink: 0; /* Prevents buttons from shrinking */
+            flex-shrink: 0;
         }
+        
+        #deleteMantraButton {
+            background-color: transparent;
+            color: #39ff14;
+            border: 2px solid #39ff14;
+            border-radius: 25px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-left: auto; /* pushes delete button to the right */
+        }
+
+        .button-row {
+            display: flex;             /* horizontal layout */
+            justify-content: space-between;  /* pushes buttons to edges */
+            align-items: center;       /* vertical alignment */
+            width: 100%;               /* ensure full container width */
+        }
+        
+        
 
         #addMantraButton:hover,
         #deleteMantraButton:hover {
@@ -152,21 +174,22 @@ body {
 
         .settings-content {
             background-color: #1a1a1a;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px #00ff00;
+            padding: clamp(15px, 5vw, 30px);      /* scales with viewport, min 15px, max 30px */
+            border-radius: 1rem;                   /* keeps proportionate rounding */
+            box-shadow: 0 0 2vw #00ff00;          /* scales shadow with screen size */
             text-align: center;
             position: relative;
-            max-height: 90vh;
+            max-height: 70vh;
             overflow-y: auto;
-            width: 70%;
-            max-width: 400px;
+            width: clamp(250px, 80%, 400px);       /* min 250px, ideal 60%, max 400px */
         }
+        
 
         .settings-content h2 {
             font-size: 2em;
             color: #00ff00;
             margin-bottom: 30px;
+            display:none;
         }
 
         .panel-buttons {
@@ -174,10 +197,12 @@ body {
             flex-direction: column;
             gap: 15px;
             margin-top: 10px;
+            align-items: center;
         }
 
         .panel-buttons button {
-            width: 100%;
+            width: 50%;
+            
             padding: 12px 20px;
             font-size: 1.2em;
             border: 2px solid #00ff00;
@@ -240,6 +265,7 @@ body {
             flex-grow: 1;
             max-width: 120px; /* Keeps the input shorter than the dropdown */
             font-size: 1em;
+            
         }
 
         #manualCountInput:focus {
@@ -290,7 +316,7 @@ body {
 
             .setting-item label {
                 width: 100%;
-                text-align: left;
+                text-align: center;
                 margin-bottom: 5px;
             }
 
