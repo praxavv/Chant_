@@ -158,16 +158,18 @@ body::before{
 }
 
 /* ========== SETTINGS CONTENT BOX 📦 ========== */
-.settings-content{
+.settings-content {
   background: var(--color-panel-dark);
   padding: var(--panel-padding);
   border-radius: var(--panel-radius);
   box-shadow: var(--glow-primary);
   text-align: center;
-  width: 92%;
+  width: 90%;
   max-width: 520px;
+  height: 80vh; /* 80% of the viewport height */
   position: relative;
   animation: neon-flicker 4s infinite alternate ease-in-out;
+  overflow-y: auto; /* scroll if content exceeds height */
 }
 @keyframes neon-flicker{
   0%,100% { box-shadow: 0 0 10px var(--color-neon-primary); }
