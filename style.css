@@ -15,8 +15,7 @@
 
   /* Typography */
   /* Note: include 'VT323' in your HTML if you want it */
-  --font-retro: 'VT323', 'Consolas', monospace;
-
+  --font-retro: ui-serif, Georgia, "Times New Roman", serif;
   /* Sizing tokens */
   --panel-radius: 0.5rem;
   --panel-padding: 1.6rem;
@@ -29,7 +28,7 @@
 html, body { height: 100%; }
 
 body{
-  font-family: var(--font-retro);
+  font-family: "Times New Roman", serif;
   min-height: 100svh; /* better for mobile UI */
   display: flex;
   flex-direction: column;
@@ -37,7 +36,7 @@ body{
   justify-content: center;
   background-color: var(--color-background-dark);
   color: var(--color-neon-primary);
-  text-shadow: var(--glow-primary);
+  text-shadow: none;
   /* avoid completely hiding overflow; prevents keyboard issues on mobile */
   overflow-x: hidden;
   position: relative;
@@ -112,8 +111,8 @@ body::before{
 }
 
 #counter{
-  font-size: clamp(2rem, 10vw, 4rem);
-  margin-bottom: 1.75rem;
+  font-size: 1.5rem;
+  margin: 10px auto;
   text-shadow: var(--glow-primary);
 }
 
@@ -307,7 +306,14 @@ button:disabled{
 }
 
 /* ---------- MANTRA INPUT BOX STYLING ---------- */
-.mantra-box{ margin-bottom: 1.5rem; }
+
+.mantra-box {
+  margin: 1rem;
+}
+.mantra-box label {
+  position: relative;   /* move down */
+  right: 19px;  /* move right */
+}
 
 .mantra-input{
   display: flex;
@@ -320,7 +326,7 @@ button:disabled{
 .mantra-input select{
   flex: 1;
   padding: 0.5rem 0.65rem;
-  font-size: 0.95rem;
+  font-size: 0.95;
   border: 2px solid #444;
   border-radius: 6px;
   background-color: #0c0c0c;
