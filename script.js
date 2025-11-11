@@ -1,166 +1,194 @@
+// ======================================================
+// 🌌 Alien Chant Counter - Clean Structured Version
+// ======================================================
+// This script controls:
+// - UI interactions (settings panel, buttons)
+// - Mantra management (add/delete/select/save)
+// - Counter logic (increment, decrement, reset, manual set)
+// - Background music toggle
+// - Star background animation
+// ======================================================
+
+
+// ------------------------------
+// 🧱 DOM ELEMENT REFERENCES
+// ------------------------------
 const counterElement = document.getElementById("counter");
 const settingsIcon = document.getElementById("settingsIcon");
 const settingsPanel = document.getElementById("settingsPanel");
 const closeSettingsButton = document.getElementById("closeSettingsButton");
 const resetButton = document.getElementById("resetButton");
 const decrementButton = document.getElementById("decrementButton");
+const manualCountInput = document.getElementById("manualCountInput");
+const setManualCountButton = document.getElementById("setManualCountButton");
+
 const body = document.body;
 const starsContainer = document.getElementById("stars");
 const bgMusic = document.getElementById("bgMusic");
 const playMusicButton = document.getElementById("playMusicButton");
-const manualCountInput = document.getElementById("manualCountInput");
-const setManualCountButton = document.getElementById("setManualCountButton");
 
-// 🕉️ New elements (dropdown)
 const mantraSelect = document.getElementById("mantraSelect");
 const addMantraButton = document.getElementById("addMantraButton");
 const deleteMantraButton = document.getElementById("deleteMantraButton");
 const activeMantraName = document.getElementById("activeMantraName");
+const addCountButton = document.getElementById("addCountButton");
+const subtractCountButton = document.getElementById("subtractCountButton");
 
+
+// ------------------------------
+// ⚙️ STATE + CONSTANTS
+// ------------------------------
 let isMusicPlaying = false;
 let mantras = [];
 let activeMantraId = null;
 
 const LOCAL_STORAGE_KEY = "alienMantras";
 const APP_VERSION_KEY = "mantraAppVersion";
-const CURRENT_VERSION = 2; // Increment when making structural changes
+const CURRENT_VERSION = 2; // increment when structure changes
 
-// --- Audio ---
+
+// ======================================================
+// 🎵 MUSIC TOGGLE LOGIC
+// ======================================================
 playMusicButton.addEventListener("click", () => {
   if (isMusicPlaying) {
+    // Pause music
     bgMusic.pause();
     playMusicButton.textContent = "▶ Play Music";
   } else {
+    // Attempt to play music (some browsers block autoplay)
     bgMusic.play()
       .then(() => playMusicButton.textContent = "⏸ Pause Music")
       .catch(err => {
-        alert("Your browser blocked audio. Tap again or check settings.");
+        alert("Browser blocked audio playback. Tap again or check settings.");
         console.error(err);
       });
   }
   isMusicPlaying = !isMusicPlaying;
 });
 
+// Reset button text when music ends
 bgMusic.addEventListener("ended", () => {
   isMusicPlaying = false;
   playMusicButton.textContent = "▶ Play Music";
 });
 
-// --- Mantra Logic ---
+
+// ======================================================
+// 📿 MANTRA MANAGEMENT (LocalStorage)
+// ======================================================
+
+// --- Save all mantras to localStorage ---
 function saveMantras() {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mantras));
 }
 
+// --- Load mantras and version control ---
 function loadMantras() {
   const savedVersion = localStorage.getItem(APP_VERSION_KEY);
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
 
   if (savedVersion !== CURRENT_VERSION.toString()) {
-    // First time running this version
-    // Keep only user-added mantras; remove old defaults if any
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (stored) {
-      const allMantras = JSON.parse(stored);
-      mantras = allMantras.filter(m => !m.locked); // remove old defaults
-    } else {
-      mantras = [];
-    }
-
+    // First run of new version → cleanup defaults, keep user-added only
+    mantras = stored ? JSON.parse(stored).filter(m => !m.locked) : [];
     localStorage.setItem(APP_VERSION_KEY, CURRENT_VERSION.toString());
     saveMantras();
   } else {
-    // Load normally
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     mantras = stored ? JSON.parse(stored) : [];
   }
 
-  // Set active mantra
+  // Set active mantra if none
   if (!activeMantraId && mantras.length) activeMantraId = mantras[0].id;
 
   updateMantraDropdown();
   updateUI();
 }
 
+
+// --- Update dropdown list ---
 function updateMantraDropdown() {
-  mantraSelect.innerHTML = "";
+  mantraSelect.innerHTML = ""; // clear old options
+
   mantras.forEach((m) => {
     const option = document.createElement("option");
     option.value = m.id;
-
-    if (m.id === activeMantraId) {
-      option.textContent = m.name;
-    } else {
-      option.textContent = `${m.name} (${m.count})`;
-    }
+    option.textContent = (m.id === activeMantraId)
+      ? m.name
+      : `${m.name} (${m.count})`;
 
     if (m.id === activeMantraId) option.selected = true;
     mantraSelect.appendChild(option);
   });
 }
 
+
+// --- Change active mantra ---
 mantraSelect.addEventListener("change", (e) => {
   activeMantraId = parseInt(e.target.value, 10);
   saveMantras();
   updateUI();
 });
 
-// --- Add / Delete ---
+
+// --- Add new mantra ---
 addMantraButton.addEventListener("click", () => {
-  if (mantras.length >= 20) {
-    alert("You can only have up to 20 mantras.");
-    return;
-  }
+  if (mantras.length >= 20) return alert("You can only have up to 20 mantras.");
+
   const name = prompt("Enter new mantra name:");
   if (!name) return;
+
   const newMantra = { id: Date.now(), name, count: 0, locked: false };
   mantras.push(newMantra);
   activeMantraId = newMantra.id;
+
   saveMantras();
   updateMantraDropdown();
   updateUI();
 });
 
-if (deleteMantraButton) {
-  deleteMantraButton.addEventListener("click", () => {
-    const selectedId = parseInt(mantraSelect.value, 10);
-    const m = mantras.find(x => x.id === selectedId);
-    if (!m) return;
 
-    if (m.locked) {
-      alert(`"${m.name}" is a default mantra and cannot be deleted.`);
-      return;
-    }
+// --- Delete selected mantra ---
+deleteMantraButton?.addEventListener("click", () => {
+  const selectedId = parseInt(mantraSelect.value, 10);
+  const target = mantras.find(m => m.id === selectedId);
+  if (!target) return;
 
-    if (!confirm(`Delete "${m.name}" mantra?`)) return;
+  if (target.locked)
+    return alert(`"${target.name}" is a default mantra and cannot be deleted.`);
 
-    mantras = mantras.filter(x => x.id !== selectedId);
+  if (!confirm(`Delete "${target.name}" mantra?`)) return;
 
-    if (activeMantraId === selectedId && mantras.length) {
-      activeMantraId = mantras[0].id;
-    } else if (!mantras.length) {
-      activeMantraId = null;
-    }
+  mantras = mantras.filter(m => m.id !== selectedId);
+  activeMantraId = mantras[0]?.id || null;
 
-    saveMantras();
-    updateMantraDropdown();
-    updateUI();
-  });
-}
+  saveMantras();
+  updateMantraDropdown();
+  updateUI();
+});
 
-// --- UI Update ---
+
+// ======================================================
+// 🔢 COUNTER OPERATIONS
+// ======================================================
+
+// --- Update counter UI with active mantra ---
 function updateUI() {
   const active = mantras.find(m => m.id === activeMantraId);
+
   if (!active) {
     activeMantraName.textContent = "No Mantra";
     counterElement.textContent = "0";
     manualCountInput.value = "";
     return;
   }
+
   activeMantraName.textContent = active.name;
   counterElement.textContent = active.count.toLocaleString();
   manualCountInput.value = active.count;
   updateMantraDropdown();
 }
 
+// --- Increment ---
 function incrementCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -169,6 +197,7 @@ function incrementCount() {
   updateUI();
 }
 
+// --- Decrement ---
 function decrementCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active || active.count <= 0) return;
@@ -177,6 +206,7 @@ function decrementCount() {
   updateUI();
 }
 
+// --- Reset ---
 function resetCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -185,22 +215,26 @@ function resetCount() {
   updateUI();
 }
 
+// --- Set manually from input ---
 function setManualCount() {
   const newCount = parseInt(manualCountInput.value, 10);
-  if (isNaN(newCount) || newCount < 0) {
-    alert("Enter a valid number for the count!");
-    return;
-  }
+  if (isNaN(newCount) || newCount < 0)
+    return alert("Enter a valid number for the count!");
+
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
+
   active.count = newCount;
   saveMantras();
   updateUI();
 }
 
-// --- UI Events ---
-settingsIcon.addEventListener("click", (event) => {
-  event.stopPropagation();
+
+// ======================================================
+// 🧭 SETTINGS PANEL + UI INTERACTIONS
+// ======================================================
+settingsIcon.addEventListener("click", (e) => {
+  e.stopPropagation();
   settingsPanel.classList.add("active");
   updateUI();
 });
@@ -214,35 +248,70 @@ resetButton.addEventListener("click", () => {
   settingsPanel.classList.remove("active");
 });
 
-decrementButton.addEventListener("click", () => decrementCount());
+decrementButton.addEventListener("click", decrementCount);
+
 setManualCountButton.addEventListener("click", () => {
   setManualCount();
   settingsPanel.classList.remove("active");
 });
 
-// --- Count Increment on Body Click ---
-body.addEventListener("click", (event) => {
-  const isClickInside = settingsPanel.contains(event.target);
-  const isClickOnIcon = settingsIcon.contains(event.target);
-  if (!isClickInside && !isClickOnIcon && !settingsPanel.classList.contains("active")) {
+// ✅ Addition
+addCountButton?.addEventListener("click", () => {
+  const value = parseInt(manualCountInput.value, 10) || 0;
+  const active = mantras.find(m => m.id === activeMantraId);
+  if (!active) return;
+  active.count += value;
+  saveMantras();
+  updateUI();
+});
+
+// ✅ Subtraction (prevents negative count)
+subtractCountButton?.addEventListener("click", () => {
+  const value = parseInt(manualCountInput.value, 10) || 0;
+  const active = mantras.find(m => m.id === activeMantraId);
+  if (!active) return;
+  active.count = Math.max(0, active.count - value);
+  saveMantras();
+  updateUI();
+});
+
+
+// ======================================================
+// 👆 BODY CLICK = INCREMENT
+// ======================================================
+body.addEventListener("click", (e) => {
+  const clickedInsidePanel = settingsPanel.contains(e.target);
+  const clickedIcon = settingsIcon.contains(e.target);
+
+  // Only increment if clicking outside settings
+  if (!clickedInsidePanel && !clickedIcon && !settingsPanel.classList.contains("active")) {
     incrementCount();
   }
 });
 
-// --- Stars ---
+
+// ======================================================
+// 🌠 STAR BACKGROUND ANIMATION
+// ======================================================
 function createStars(numStars) {
   for (let i = 0; i < numStars; i++) {
     const star = document.createElement("div");
     star.classList.add("star");
+
     const size = Math.random() * 3 + 1;
     star.style.width = `${size}px`;
     star.style.height = `${size}px`;
     star.style.top = `${Math.random() * 100}%`;
     star.style.left = `${Math.random() * 100}%`;
     star.style.animationDelay = `${Math.random()}s`;
+
     starsContainer.appendChild(star);
   }
 }
 
+
+// ======================================================
+// 🚀 INITIALIZE APP
+// ======================================================
 createStars(200);
 loadMantras();

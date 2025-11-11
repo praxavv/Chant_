@@ -4,49 +4,103 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Alien Chant Counter</title>
+
+  <!-- External CSS file for styling -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <!-- Background music that loops -->
   <audio id="bgMusic" src="bg-music.mp3" loop></audio>
+
+  <!-- Animated stars background layer -->
   <div class="stars" id="stars"></div>
+
+  <!-- Main content area (currently empty, used for chant display etc.) -->
   <div class="container"></div>
 
+  <!-- ⚙ Floating Settings Icon (opens settings panel) -->
   <div id="settingsIcon">⚙</div>
 
+  <!-- ==============================
+       SETTINGS PANEL (Pop-up overlay)
+       ============================== -->
   <div id="settingsPanel" class="settings-panel">
+
+    <!-- Content box inside the panel -->
     <div class="settings-content">
+
+      <!-- Close (×) button at the top-right -->
       <button id="closeSettingsButton">&times;</button>
+
+      <!-- Heading (hidden visually, but semantic) -->
       <h2>Settings</h2>
 
+      <!-- Active mantra name display -->
       <h1 id="activeMantraName">Pranav Chant</h1>
+
+      <!-- Live chant counter display -->
       <div id="viewScore" style="font-size: 15pt; margin-bottom: 20px;">
         CHANT: <span id="counter">0</span>
       </div>
 
-<div class="setting-item">
-  <label for="mantraSelect">MANTRA:</label>
-  <select id="mantraSelect"></select>
-  <div class="button-row">
-    <button id="addMantraButton">+ Add</button>
-    <button id="deleteMantraButton">Delete</button>
-  </div>
-</div>
+      <!-- ==============================
+           MANTRA SELECTION SECTION
+           ============================== -->
+      <div class="setting-item mantra-box">
+        <label for="mantraSelect">MANTRA:</label>
 
+        <!-- Dropdown and buttons inline -->
+        <div class="mantra-input">
+          <!-- Mantra selection dropdown -->
+          <select id="mantraSelect"></select>
 
+          <!-- Small inline buttons for Add / Delete -->
+          <div class="mantra-buttons">
+            <button id="addMantraButton">+</button>
+            <button id="deleteMantraButton">−</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           MANUAL COUNT SETTING SECTION
+           ============================== -->
       <div class="setting-item">
         <label for="manualCountInput">SET COUNT:</label>
+
+        <!-- Number input for setting count -->
         <input type="number" id="manualCountInput" min="0" value="0">
+
+        <!-- Button to apply count and start chanting -->
         <button id="setManualCountButton">SET & START</button>
       </div>
 
+      <!-- ==============================
+           ADD / SUBTRACT OPERATIONS
+           ============================== -->
+      <div class="setting-item">
+        <label>MANUAL OPERATIONS:</label>
+
+        <div class="button-row">
+          <button id="addCountButton">➕ Add</button>
+          <button id="subtractCountButton">➖ Subtract</button>
+        </div>
+      </div>
+
+      <!-- ==============================
+           PANEL CONTROL BUTTONS
+           ============================== -->
       <div class="panel-buttons">
         <button id="decrementButton">Decrement</button>
         <button id="resetButton">Reset</button>
         <button id="playMusicButton">▶ Play Music</button>
       </div>
-    </div>
-  </div>
+    </div> <!-- /settings-content -->
 
+  </div> <!-- /settingsPanel -->
+
+  <!-- Link to your JavaScript logic -->
   <script src="script.js"></script>
 </body>
 </html>
