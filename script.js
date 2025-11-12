@@ -1,14 +1,6 @@
 // ======================================================
-// 🌌 Alien Chant Counter - Clean Structured Version
+// 🌌 Alien Chant Counter - CLEAN & FIXES APPLIED
 // ======================================================
-// This script controls:
-// - UI interactions (settings panel, buttons)
-// - Mantra management (add/delete/select/save)
-// - Counter logic (increment, decrement, reset, manual set)
-// - Background music toggle
-// - Star background animation
-// ======================================================
-
 
 // ------------------------------
 // 🧱 DOM ELEMENT REFERENCES
@@ -44,19 +36,19 @@ let activeMantraId = null;
 
 const LOCAL_STORAGE_KEY = "alienMantras";
 const APP_VERSION_KEY = "mantraAppVersion";
-const CURRENT_VERSION = 2; // increment when structure changes
+const CURRENT_VERSION = 2;
 
 
 // ======================================================
 // 🎵 MUSIC TOGGLE LOGIC
 // ======================================================
-playMusicButton.addEventListener("click", () => {
+playMusicButton.addEventListener("click", (e) => {
+  e.stopPropagation(); // Stop click from incrementing counter (if panel is closed)
+  
   if (isMusicPlaying) {
-    // Pause music
     bgMusic.pause();
     playMusicButton.textContent = "▶ Play Music";
   } else {
-    // Attempt to play music (some browsers block autoplay)
     bgMusic.play()
       .then(() => playMusicButton.textContent = "⏸ Pause Music")
       .catch(err => {
@@ -67,7 +59,6 @@ playMusicButton.addEventListener("click", () => {
   isMusicPlaying = !isMusicPlaying;
 });
 
-// Reset button text when music ends
 bgMusic.addEventListener("ended", () => {
   isMusicPlaying = false;
   playMusicButton.textContent = "▶ Play Music";
@@ -78,18 +69,15 @@ bgMusic.addEventListener("ended", () => {
 // 📿 MANTRA MANAGEMENT (LocalStorage)
 // ======================================================
 
-// --- Save all mantras to localStorage ---
 function saveMantras() {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mantras));
 }
 
-// --- Load mantras and version control ---
 function loadMantras() {
   const savedVersion = localStorage.getItem(APP_VERSION_KEY);
   const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
 
   if (savedVersion !== CURRENT_VERSION.toString()) {
-    // First run of new version → cleanup defaults, keep user-added only
     mantras = stored ? JSON.parse(stored).filter(m => !m.locked) : [];
     localStorage.setItem(APP_VERSION_KEY, CURRENT_VERSION.toString());
     saveMantras();
@@ -97,18 +85,18 @@ function loadMantras() {
     mantras = stored ? JSON.parse(stored) : [];
   }
 
-  // Set active mantra if none
   if (!activeMantraId && mantras.length) activeMantraId = mantras[0].id;
 
   updateMantraDropdown();
   updateUI();
+  
+  // Attach all non-counter-related listeners here after loading
+  attachMantraListeners();
 }
 
 
-// --- Update dropdown list ---
 function updateMantraDropdown() {
-  mantraSelect.innerHTML = ""; // clear old options
-
+  mantraSelect.innerHTML = "";
   mantras.forEach((m) => {
     const option = document.createElement("option");
     option.value = m.id;
@@ -121,57 +109,55 @@ function updateMantraDropdown() {
   });
 }
 
+function attachMantraListeners() {
+    mantraSelect.addEventListener("change", (e) => {
+      e.stopPropagation(); // FIX: Stop click from bubbling and incrementing
+      activeMantraId = parseInt(e.target.value, 10);
+      saveMantras();
+      updateUI();
+    });
 
-// --- Change active mantra ---
-mantraSelect.addEventListener("change", (e) => {
-  activeMantraId = parseInt(e.target.value, 10);
-  saveMantras();
-  updateUI();
-});
+    addMantraButton.addEventListener("click", (e) => {
+      e.stopPropagation(); // FIX: Stop click from bubbling and incrementing
+      if (mantras.length >= 20) return alert("You can only have up to 20 mantras.");
 
+      const name = prompt("Enter new mantra name:");
+      if (!name) return;
 
-// --- Add new mantra ---
-addMantraButton.addEventListener("click", () => {
-  if (mantras.length >= 20) return alert("You can only have up to 20 mantras.");
+      const newMantra = { id: Date.now(), name, count: 0, locked: false };
+      mantras.push(newMantra);
+      activeMantraId = newMantra.id;
 
-  const name = prompt("Enter new mantra name:");
-  if (!name) return;
+      saveMantras();
+      updateMantraDropdown();
+      updateUI();
+    });
 
-  const newMantra = { id: Date.now(), name, count: 0, locked: false };
-  mantras.push(newMantra);
-  activeMantraId = newMantra.id;
+    deleteMantraButton?.addEventListener("click", (e) => {
+      e.stopPropagation(); // FIX: Stop click from bubbling and incrementing
+      const selectedId = parseInt(mantraSelect.value, 10);
+      const target = mantras.find(m => m.id === selectedId);
+      if (!target) return;
 
-  saveMantras();
-  updateMantraDropdown();
-  updateUI();
-});
+      if (target.locked)
+        return alert(`"${target.name}" is a default mantra and cannot be deleted.`);
 
+      if (!confirm(`Delete "${target.name}" mantra?`)) return;
 
-// --- Delete selected mantra ---
-deleteMantraButton?.addEventListener("click", () => {
-  const selectedId = parseInt(mantraSelect.value, 10);
-  const target = mantras.find(m => m.id === selectedId);
-  if (!target) return;
+      mantras = mantras.filter(m => m.id !== selectedId);
+      activeMantraId = mantras[0]?.id || null;
 
-  if (target.locked)
-    return alert(`"${target.name}" is a default mantra and cannot be deleted.`);
-
-  if (!confirm(`Delete "${target.name}" mantra?`)) return;
-
-  mantras = mantras.filter(m => m.id !== selectedId);
-  activeMantraId = mantras[0]?.id || null;
-
-  saveMantras();
-  updateMantraDropdown();
-  updateUI();
-});
+      saveMantras();
+      updateMantraDropdown();
+      updateUI();
+    });
+}
 
 
 // ======================================================
 // 🔢 COUNTER OPERATIONS
 // ======================================================
 
-// --- Update counter UI with active mantra ---
 function updateUI() {
   const active = mantras.find(m => m.id === activeMantraId);
 
@@ -188,7 +174,6 @@ function updateUI() {
   updateMantraDropdown();
 }
 
-// --- Increment ---
 function incrementCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -197,7 +182,6 @@ function incrementCount() {
   updateUI();
 }
 
-// --- Decrement ---
 function decrementCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active || active.count <= 0) return;
@@ -206,7 +190,6 @@ function decrementCount() {
   updateUI();
 }
 
-// --- Reset ---
 function resetCount() {
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -215,7 +198,6 @@ function resetCount() {
   updateUI();
 }
 
-// --- Set manually from input ---
 function setManualCount() {
   const newCount = parseInt(manualCountInput.value, 10);
   if (isNaN(newCount) || newCount < 0)
@@ -240,27 +222,33 @@ settingsIcon.addEventListener("click", (e) => {
   updateUI();
 });
 
-closeSettingsButton.addEventListener("click", () => {
+closeSettingsButton.addEventListener("click", (e) => {
+  e.stopPropagation();
   settingsPanel.classList.remove("active");
   settingsIcon.classList.remove("hidden");
 });
 
-resetButton.addEventListener("click", () => {
+resetButton.addEventListener("click", (e) => {
+  e.stopPropagation();
   resetCount();
   settingsPanel.classList.remove("active");
   settingsIcon.classList.remove("hidden");
 });
 
-decrementButton.addEventListener("click", decrementCount);
+decrementButton.addEventListener("click", (e) => {
+  e.stopPropagation();
+  decrementCount();
+});
 
-setManualCountButton.addEventListener("click", () => {
+setManualCountButton.addEventListener("click", (e) => {
+  e.stopPropagation();
   setManualCount();
   settingsPanel.classList.remove("active");
   settingsIcon.classList.remove("hidden");
 });
 
-// ✅ Addition
-addCountButton?.addEventListener("click", () => {
+addCountButton?.addEventListener("click", (e) => {
+  e.stopPropagation();
   const value = parseInt(manualCountInput.value, 10) || 0;
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -269,8 +257,8 @@ addCountButton?.addEventListener("click", () => {
   updateUI();
 });
 
-// ✅ Subtraction (prevents negative count)
-subtractCountButton?.addEventListener("click", () => {
+subtractCountButton?.addEventListener("click", (e) => {
+  e.stopPropagation();
   const value = parseInt(manualCountInput.value, 10) || 0;
   const active = mantras.find(m => m.id === activeMantraId);
   if (!active) return;
@@ -281,23 +269,21 @@ subtractCountButton?.addEventListener("click", () => {
 
 
 // ======================================================
-// 👆 BODY CLICK = INCREMENT
+// 👆 BODY CLICK = INCREMENT & PANEL DISMISSAL (FIXED)
 // ======================================================
 body.addEventListener("click", (e) => {
-    const clickedInsidePanel = settingsPanel.contains(e.target);
     const panelIsActive = settingsPanel.classList.contains("active");
+    const clickedSettingsIcon = e.target.id === 'settingsIcon' || e.target.closest('#settingsIcon');
 
     if (panelIsActive) {
-        // If panel is active, check if the click was *outside* it
-        if (!clickedInsidePanel) {
+        // Goal: Close panel if click is on the dark background overlay, NOT the content box.
+        // The click must be on the settingsPanel element itself, not a child element within the content.
+        if (e.target === settingsPanel) {
             settingsPanel.classList.remove("active");
-            // ➡️ ADD THIS LINE: Show the icon if the panel is closed by body click
-            settingsIcon.classList.remove("hidden"); 
+            settingsIcon.classList.remove("hidden");
         }
-        // If clicked inside the active panel, do nothing (don't increment)
-    } else {
-        // If panel is NOT active, increment count (unless the icon itself was clicked)
-        // Note: Clicks on the icon are handled by its own listener, which stops propagation.
+    } else if (!clickedSettingsIcon) {
+        // Goal: Only increment if the panel is NOT active and the settings icon was NOT clicked.
         incrementCount();
     }
 });

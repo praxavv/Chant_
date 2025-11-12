@@ -5,7 +5,7 @@
   --color-neon-secondary: #39ff14; /* Slightly dimmer green for details */
   --color-accent: var(--color-neon-secondary);
   --color-background-dark: #000;
-  --color-panel-dark: #111; /* slightly darker panel for contrast */
+  --color-panel-dark: #111;
   --color-text-light: #fff;
   --color-error: #ff4d4d;
 
@@ -13,68 +13,10 @@
   --glow-primary: 0 0 10px var(--color-neon-primary), 0 0 20px rgba(0,255,0,0.15);
   --glow-subtle: 0 0 5px rgba(0,255,0,0.6);
 
-  /* Typography */
-  /* Note: include 'VT323' in your HTML if you want it */
-  --font-retro: ui-serif, Georgia, "Times New Roman", serif;
   /* Sizing tokens */
   --panel-radius: 0.5rem;
   --panel-padding: 1.6rem;
   --control-gap: 0.75rem;
-}
-
-/* ========== GLOBAL RESET & BASE 🌎 ========== */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body { height: 100%; }
-
-body{
-  font-family: "Times New Roman", serif;
-  min-height: 100svh; /* better for mobile UI */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-background-dark);
-  color: var(--color-neon-primary);
-  text-shadow: none;
-  /* avoid completely hiding overflow; prevents keyboard issues on mobile */
-  overflow-x: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-/* subtle scanline / CRT overlay (non-interactive) */
-body::before{
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    transparent 0,
-    rgba(0,0,0,0.08) 1px,
-    transparent 2px
-  );
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.18;
-}
-
-/* ========== ACCESSIBILITY & MOTION ♿ ========== */
-/* Respect users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce){
-  .star,
-  .settings-content,
-  .settings-panel,
-  .mantra-buttons button {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* Keyboard focus (use :focus-visible for better UA support) */
-:focus-visible{
-  outline: 3px dashed var(--color-text-light);
-  outline-offset: 4px;
-  box-shadow: var(--glow-primary);
 }
 
 /* ========== BACKGROUND STARS ✨ ========== */
@@ -100,18 +42,34 @@ body::before{
   to   { opacity: 1;    transform: scale(1.35); }
 }
 
+
+/* ========== GLOBAL RESET & BASE 🌎 ========== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body{
+  font-family: "Times New Roman", serif;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background-dark);
+  color: var(--color-neon-primary);
+  /* Removed body::before (scanline) and star styles */
+}
+
 /* ========== MAIN CONTAINER & COUNTER 🧮 ========== */
 .container{
   margin-top: -80px;
   padding: 1.75rem;
-  text-align: center;
   max-width: 900px;
   width: 90%;
   z-index: 1;
 }
 
 #counter{
-  font-size: 1.5rem;
+  font-size: 15pt;
   margin: 10px auto;
   text-shadow: var(--glow-primary);
 }
@@ -121,22 +79,19 @@ body::before{
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Reduced size for simplicity */
+  width: 44px;
+  height: 44px;
   font-size: 1.6rem;
   color: var(--color-neon-primary);
   cursor: pointer;
   text-shadow: var(--glow-subtle);
-  transition: transform 220ms ease, text-shadow 220ms ease;
+  transition: transform 220ms ease;
   z-index: 1001;
   border-radius: 50%;
   background: rgba(255,255,255,0.02);
 }
 #settingsIcon:hover { transform: rotate(30deg); text-shadow: var(--glow-primary); }
-#settingsIcon:active { transform: rotate(60deg); text-shadow: 0 0 25px var(--color-neon-primary); }
 
 /* ========== SETTINGS PANEL (MODAL) 🔳 ========== */
 .settings-panel{
@@ -149,26 +104,29 @@ body::before{
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 240ms ease, visibility 240ms ease;
+  transition: opacity 240ms ease;
 }
 .settings-panel.active{
   opacity: 1;
   visibility: visible;
 }
 
-/* ========== SETTINGS CONTENT BOX 📦 ========== */
+/* ========== SETTINGS CONTENT BOX (NEON GLOW) 📦 ========== */
 .settings-content {
   background: var(--color-panel-dark);
   padding: var(--panel-padding);
   border-radius: var(--panel-radius);
+  /* Kept Neon Glow and Flicker */
   box-shadow: var(--glow-primary);
   text-align: center;
   width: 90%;
-  max-width: 520px;
-  height: 80vh; /* 80% of the viewport height */
+  max-width: 450px; /* Minimized panel size */
+  max-height: 90vh; /* Minimized panel size */
   position: relative;
   animation: neon-flicker 4s infinite alternate ease-in-out;
-  overflow-y: auto; /* scroll if content exceeds height */
+  overflow-y: auto;
+  /* Apply positioning fix */
+  transform: translateY(1rem);
 }
 @keyframes neon-flicker{
   0%,100% { box-shadow: 0 0 10px var(--color-neon-primary); }
@@ -186,7 +144,7 @@ body::before{
   color: var(--color-neon-primary);
   cursor: pointer;
   text-shadow: var(--glow-subtle);
-  transition: transform 150ms ease, color 150ms ease, text-shadow 150ms ease;
+  transition: transform 150ms ease, color 150ms ease;
 }
 #closeSettingsButton:hover{
   color: var(--color-error);
@@ -209,10 +167,9 @@ body::before{
   text-align: right;
   color: var(--color-accent);
   font-size: 1.05rem;
-  white-space: nowrap;
 }
 
-/* Consolidated input / select styles (used by manual count & mantra select) */
+/* Input Styles */
 .setting-control,
 .mantra-input select,
 #mantraSelect,
@@ -223,36 +180,25 @@ body::before{
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
-  text-align: center;
-  transition: border-color 220ms ease, box-shadow 220ms ease;
   min-width: 120px;
+  text-align: center;
 }
-.setting-control:focus,
-.mantra-input select:focus,
-#mantraSelect:focus,
-#manualCountInput:focus{
-  border-color: var(--color-neon-primary);
-  box-shadow: var(--glow-subtle);
-  outline: none;
-}
-.setting-control:hover,
-.mantra-input select:hover,
-#mantraSelect:hover,
-#manualCountInput:hover{
-  border-color: var(--color-neon-primary);
-}
+.setting-control:focus{ border-color: var(--color-neon-primary); box-shadow: var(--glow-subtle); outline: none; }
 
 /* ========== BUTTON BASE STYLES 🔘 ========== */
 button{
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 160ms ease, background-color 160ms ease;
-  font-family: var(--font-retro);
   font-weight: 700;
   border-radius: 6px;
   border: 2px solid transparent;
 }
+button:hover:not(:disabled){ transform: translateY(-1px); box-shadow: var(--glow-primary); }
+button:active { transform: translateY(2px) scale(0.98); }
+button:disabled{ opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
-/* Primary action */
+
+/* Primary action - NEON GLOW */
 #setManualCountButton{
   background: var(--color-neon-primary);
   color: #0a0a0a;
@@ -260,8 +206,10 @@ button{
   padding: 0.45rem 0.85rem;
   box-shadow: 0 0 12px var(--color-neon-primary);
 }
+#setManualCountButton:hover { background: var(--color-accent); box-shadow: 0 0 20px var(--color-neon-primary); }
 
-/* Secondary / outline buttons */
+
+/* Secondary / outline buttons - NEON GLOW */
 .btn-outline {
   background: transparent;
   color: var(--color-neon-primary);
@@ -270,27 +218,12 @@ button{
   box-shadow: var(--glow-subtle);
 }
 
-button:hover:not(:disabled){
-  transform: translateY(-1px);
-  box-shadow: var(--glow-primary);
-}
-#setManualCountButton:hover { background: var(--color-accent); box-shadow: 0 0 20px var(--color-neon-primary); }
-
-button:active { transform: translateY(2px) scale(0.98); }
-
-/* Disabled state */
-button:disabled{
-  opacity: 0.4;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
 /* ========== ALIGNMENT GROUPS 📐 ========== */
 .button-row, .panel-buttons{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 2rem;
   flex-wrap: wrap;
 }
 
@@ -306,15 +239,6 @@ button:disabled{
 }
 
 /* ---------- MANTRA INPUT BOX STYLING ---------- */
-
-.mantra-box {
-  margin: 1rem;
-}
-.mantra-box label {
-  position: relative;   /* move down */
-  right: 19px;  /* move right */
-}
-
 .mantra-input{
   display: flex;
   align-items: center;
@@ -322,20 +246,17 @@ button:disabled{
   gap: 0.6rem;
 }
 
-/* more specific select styling inside the mantra container */
+/* Mantra Select */
 .mantra-input select{
   flex: 1;
   padding: 0.5rem 0.65rem;
   font-size: 0.95;
   border: 2px solid #444;
-  border-radius: 6px;
   background-color: #0c0c0c;
   color: var(--color-text-light);
-  outline: none;
-  min-width: 140px;
 }
 
-/* the round icon buttons next to the select */
+/* Mantra Icon Buttons - NEON GLOW */
 .mantra-buttons{
   display: flex;
   gap: 0.5rem;
@@ -350,10 +271,29 @@ button:disabled{
   border: 2px solid var(--color-neon-secondary);
   border-radius: 8px;
   box-shadow: 0 0 6px rgba(57,255,20,0.25);
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
+/* ADD THIS NEW RULE */
+.mantra-buttons button:focus,
+.mantra-buttons button:focus-visible {
+  /* Force the button back to its default colors/shadows upon focus/tap */
+  background-color: #121212;
+  color: var(--color-neon-secondary);
+  box-shadow: 0 0 6px rgba(57,255,20,0.25); 
+  outline: none; /* Ensure no default browser outline */
+}
+
+.mantra-box label{
+	margin-left: -40px;
+}
 .mantra-buttons button:hover{ background-color: var(--color-neon-secondary); color: #0a0a0a; box-shadow: 0 0 12px var(--color-neon-secondary); }
+
+#viewScore {
+  /* Increase the top margin to push it down from the element above */
+  margin: 10px auto !important; 
+  /* Using !important to ensure it overrides the inline style's margin-bottom: 20px */
+}
+
 
 /* mobile-friendly stacking */
 @media (max-width: 550px){
@@ -366,43 +306,4 @@ button:disabled{
     margin-top: 0.5rem;
   }
   .mantra-buttons button{ flex: 1; }
-}
-
-/* ========== LARGER SCREENS: DESKTOP LAYOUT 💻 ========== */
-@media (min-width: 1024px){
-  .settings-content{
-    max-width: 650px;
-    padding: 3rem 3.5rem;
-    border-radius: 1rem;
-  }
-
-  .setting-item{
-    justify-content: space-between;
-    padding: 0 0.6rem;
-    margin-bottom: 1.5rem;
-    gap: 1rem;
-  }
-
-  .setting-item label{
-    min-width: 180px;
-    text-align: left;
-    font-size: 1.1rem;
-  }
-
-  .button-row{ justify-content: flex-start; width: 100%; }
-
-  .mantra-input{ flex-grow: 1; max-width: 360px; }
-
-  .panel-buttons{
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 1.9rem;
-  }
-  .panel-buttons button{ width: auto; padding: 0.75rem 1.25rem; font-size: 1.05rem; }
-}
-
-/* make counter more prominent on very large screens */
-@media (min-width: 1400px){
-  #counter{ font-size: 6rem; }
 }
