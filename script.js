@@ -236,16 +236,19 @@ function setManualCount() {
 settingsIcon.addEventListener("click", (e) => {
   e.stopPropagation();
   settingsPanel.classList.add("active");
+  settingsIcon.classList.add("hidden");
   updateUI();
 });
 
 closeSettingsButton.addEventListener("click", () => {
   settingsPanel.classList.remove("active");
+  settingsIcon.classList.remove("hidden");
 });
 
 resetButton.addEventListener("click", () => {
   resetCount();
   settingsPanel.classList.remove("active");
+  settingsIcon.classList.remove("hidden");
 });
 
 decrementButton.addEventListener("click", decrementCount);
@@ -253,6 +256,7 @@ decrementButton.addEventListener("click", decrementCount);
 setManualCountButton.addEventListener("click", () => {
   setManualCount();
   settingsPanel.classList.remove("active");
+  settingsIcon.classList.remove("hidden");
 });
 
 // ✅ Addition
@@ -280,13 +284,22 @@ subtractCountButton?.addEventListener("click", () => {
 // 👆 BODY CLICK = INCREMENT
 // ======================================================
 body.addEventListener("click", (e) => {
-  const clickedInsidePanel = settingsPanel.contains(e.target);
-  const clickedIcon = settingsIcon.contains(e.target);
+    const clickedInsidePanel = settingsPanel.contains(e.target);
+    const panelIsActive = settingsPanel.classList.contains("active");
 
-  // Only increment if clicking outside settings
-  if (!clickedInsidePanel && !clickedIcon && !settingsPanel.classList.contains("active")) {
-    incrementCount();
-  }
+    if (panelIsActive) {
+        // If panel is active, check if the click was *outside* it
+        if (!clickedInsidePanel) {
+            settingsPanel.classList.remove("active");
+            // ➡️ ADD THIS LINE: Show the icon if the panel is closed by body click
+            settingsIcon.classList.remove("hidden"); 
+        }
+        // If clicked inside the active panel, do nothing (don't increment)
+    } else {
+        // If panel is NOT active, increment count (unless the icon itself was clicked)
+        // Note: Clicks on the icon are handled by its own listener, which stops propagation.
+        incrementCount();
+    }
 });
 
 
