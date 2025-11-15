@@ -86,12 +86,12 @@ body{
   color: var(--color-neon-primary);
   cursor: pointer;
   text-shadow: var(--glow-subtle);
-  transition: transform 220ms ease;
+  /*transition: transform 220ms ease;*/
   z-index: 1001;
   border-radius: 50%;
-  background: rgba(255,255,255,0.02);
+  /*background: rgba(255,255,255,0.02);*/
 }
-#settingsIcon:hover { transform: rotate(30deg); text-shadow: var(--glow-primary); }
+#settingsIcon:hover { transform: none; text-shadow: var(--glow-primary); }
 
 /* ========== SETTINGS PANEL (MODAL) 🔳 ========== */
 .settings-panel{
@@ -133,23 +133,11 @@ body{
   50%    { box-shadow: 0 0 16px var(--color-neon-primary), 0 0 6px rgba(0,255,0,0.35); }
 }
 
-/* ========== CLOSE BUTTON ❌ ========== */
-#closeSettingsButton{
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.6rem;
-  color: var(--color-neon-primary);
-  cursor: pointer;
-  text-shadow: var(--glow-subtle);
-  transition: transform 150ms ease, color 150ms ease;
-}
-#closeSettingsButton:hover{
-  color: var(--color-error);
-  text-shadow: 0 0 10px var(--color-error);
-  transform: scale(1.05);
+/* Spin animation when toggling (⚙ -> ×) */
+#settingsIcon.active {
+  transform: scale(1.5);
+  color: red !important; /* Turn red in close mode */
+  text-shadow: 0 0 12px var(--color-error)!important;
 }
 
 /* ========== SETTINGS ELEMENTS & FORMS 📝 ========== */
